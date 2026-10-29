@@ -1,6 +1,6 @@
 # modelos.py
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy import Column, Float, ForeignKey, Integer, String, Table
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
  
  
 class Base(DeclarativeBase):
@@ -24,7 +24,9 @@ class CategoriaModel(Base):
     nombre: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
  
     productos: Mapped[list["ProductoModel"]] = relationship(
-        "ProductoModel", back_populates="categoria"
+        "ProductoModel",
+        back_populates="categoria",
+        cascade="all, delete-orphan",
     )
 
 class ProductoModel(Base):
