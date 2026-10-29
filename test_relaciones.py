@@ -1,7 +1,8 @@
-# Línea de importación actualizada (parte superior del archivo)
+from sqlalchemy import select
+
 from modelos import CategoriaModel, EtiquetaModel, ProductoModel
- 
- 
+
+
 def test_relacion_muchos_a_muchos_producto_etiquetas(db_session):
     cat_hogar = CategoriaModel(nombre="Hogar")
     tag_oferta = EtiquetaModel(nombre="Oferta")
@@ -19,9 +20,27 @@ def test_relacion_muchos_a_muchos_producto_etiquetas(db_session):
     prod_db = db_session.scalars(
         select(ProductoModel).filter_by(nombre="Cafetera")
     ).first()
+    assert prod_db is not None
     assert len(prod_db.etiquetas) == 2
- 
+
     tag_db = db_session.scalars(
         select(EtiquetaModel).filter_by(nombre="Oferta")
     ).first()
+    assert tag_db is not None
+    assert tag_db.productos
     assert tag_db.productos[0].nombre == "Cafetera"
+
+
+def test_relacion_uno_a_muchos_categoria_productos(db_session):
+    cat_tech = CategoriaModel(nombre="Tecnología")
+    # Al asignar categoria=..., SQLAlchemy agrega cada producto a cat_tech.productos
+    ProductoModel(nombre="Laptop", precio=2500.0, categoria=cat_tech)
+    ProductoModel(nombre="Mouse", precio=50.0, categoria=cat_tech)
+
+    db_session.add(cat_tech)
+    db_session.commit()
+
+    stmt = select(CategoriaModel).filter_by(nombre="Tecnología")
+    categoria_db = db_session.scalars(stmt).first()
+    assert categoria_db is not None
+    assert len(categoria_db.productos) == 2
